@@ -1,0 +1,46 @@
+import { useState } from "react"
+import Recipe from "./Recipe"
+import IngredientsList from "./IngredientsList"
+import { getRecipeFromMistral } from "../ai"
+
+export default function Main() {
+    const [ingredients, setIngredients] = useState<string[]>(["bread", "eggs", "ham", "bacon"])
+    const [recipe, setRecipe] = useState<string>("")
+
+    function addIngredient(formData: FormData) {
+        const newIngredient = formData.get("ingredient") as string
+        setIngredients(prevIngredients => [...prevIngredients, newIngredient])
+    }
+
+    function displaySection() {
+        return (
+            ingredients.length > 0 && <IngredientsList ingredients={ingredients} showRecipe={showRecipe} />
+        )
+    }
+
+    async function showRecipe() {
+        const recipeMarkdown = await getRecipeFromMistral(ingredients)
+        if (recipeMarkdown) {
+            setRecipe(recipeMarkdown)
+            console.log(recipeMarkdown)
+        }
+    }
+
+    return (
+        <main>
+            <form action={addIngredient} className="add-ingredient-form">
+                <input
+                    aria-label="Add ingredient"
+                    type="text"
+                    placeholder="e.g. oregano"
+                    name="ingredient"
+                />
+                <button>Add Ingredient</button>
+            </form>
+
+            {displaySection()}
+
+            {recipe && <Recipe recipe={recipe} />}
+        </main>
+    )
+}
