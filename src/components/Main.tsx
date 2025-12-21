@@ -4,7 +4,7 @@ import IngredientsList from "./IngredientsList"
 import { getRecipeFromMistral } from "../ai"
 
 export default function Main() {
-    const [ingredients, setIngredients] = useState<string[]>(["bread", "eggs", "ham", "bacon"])
+    const [ingredients, setIngredients] = useState<string[]>([])
     const [recipe, setRecipe] = useState<string>("")
 
     function addIngredient(formData: FormData) {
@@ -22,7 +22,6 @@ export default function Main() {
         const recipeMarkdown = await getRecipeFromMistral(ingredients)
         if (recipeMarkdown) {
             setRecipe(recipeMarkdown)
-            console.log(recipeMarkdown)
         }
     }
 
