@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react"
 import Recipe from "./Recipe"
 import IngredientsList from "./IngredientsList"
-import { getRecipeFromMistral } from "../ai"
+import { getRecipeFromGemini } from "../ai"
 
 export default function Main() {
     const [ingredients, setIngredients] = useState<string[]>([])
@@ -27,7 +27,7 @@ export default function Main() {
     }
 
     async function showRecipe() {
-        const recipeMarkdown = await getRecipeFromMistral(ingredients)
+        const recipeMarkdown = await getRecipeFromGemini(ingredients)
         if (recipeMarkdown) {
             setRecipe(recipeMarkdown)
         }

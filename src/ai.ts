@@ -18,7 +18,7 @@ You are an assistant that receives a list of ingredients that a user has and sug
 
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY)
 
-export async function getRecipeFromMistral(ingredientsArr: string[]): Promise<string | undefined> {
+export async function getRecipeFromGemini(ingredientsArr: string[]): Promise<string | undefined> {
     const ingredientsString = ingredientsArr.join(", ")
 
     try {
