@@ -5,38 +5,41 @@ import IngredientsList from "./IngredientsList"
 import { getRecipeFromGemini } from "../ai"
 
 const SIMILARITY_THRESHOLD = 0.8
-const MAX_EDIT_DISTANCE_RATIO = 0.3
+const MAX_EDIT_DISTANCE_RATIO = 0.35
 
 interface SimilarIngredient {
     pending: string
     existing: string
 }
 
-function levenshteinDistance(a: string, b: string): number {
+function damerauLevenshteinDistance(a: string, b: string): number {
+    const lenA = a.length
+    const lenB = b.length
     const matrix: number[][] = []
 
-    for (let i = 0; i <= b.length; i++) {
+    for (let i = 0; i <= lenB; i++) {
         matrix[i] = [i]
     }
-    for (let j = 0; j <= a.length; j++) {
+    for (let j = 0; j <= lenA; j++) {
         matrix[0][j] = j
     }
 
-    for (let i = 1; i <= b.length; i++) {
-        for (let j = 1; j <= a.length; j++) {
-            if (b[i - 1] === a[j - 1]) {
-                matrix[i][j] = matrix[i - 1][j - 1]
-            } else {
-                matrix[i][j] = Math.min(
-                    matrix[i - 1][j - 1] + 1,
-                    matrix[i][j - 1] + 1,
-                    matrix[i - 1][j] + 1
-                )
+    for (let i = 1; i <= lenB; i++) {
+        for (let j = 1; j <= lenA; j++) {
+            const cost = a[j - 1] === b[i - 1] ? 0 : 1
+            matrix[i][j] = Math.min(
+                matrix[i - 1][j] + 1,
+                matrix[i][j - 1] + 1,
+                matrix[i - 1][j - 1] + cost
+            )
+            // Transposition: swapping two adjacent characters counts as 1 edit
+            if (i > 1 && j > 1 && a[j - 1] === b[i - 2] && a[j - 2] === b[i - 1]) {
+                matrix[i][j] = Math.min(matrix[i][j], matrix[i - 2][j - 2] + 1)
             }
         }
     }
 
-    return matrix[b.length][a.length]
+    return matrix[lenB][lenA]
 }
 
 const LOADING_MESSAGES = [
@@ -98,7 +101,7 @@ export default function Main() {
             }
 
             const maxLen = Math.max(normalized.length, existingNormalized.length)
-            const editDistance = levenshteinDistance(normalized, existingNormalized)
+            const editDistance = damerauLevenshteinDistance(normalized, existingNormalized)
             if (editDistance / maxLen <= MAX_EDIT_DISTANCE_RATIO) {
                 return existing
             }
