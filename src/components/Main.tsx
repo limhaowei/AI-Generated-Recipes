@@ -100,6 +100,13 @@ export default function Main() {
                 </div>
             )}
 
+            {error && (
+                <div className="error-container" aria-live="assertive">
+                    <p className="error-message">{error}</p>
+                    <button type="button" onClick={handleTryAgain}>Try Again</button>
+                </div>
+            )}
+
             {recipe && <Recipe recipe={recipe} />}
         </main>
     )
