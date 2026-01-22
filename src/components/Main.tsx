@@ -134,9 +134,20 @@ export default function Main() {
         setSimilarWarning(null)
     }
 
+    function removeIngredient(ingredient: string) {
+        setIngredients(prev => prev.filter(item => item !== ingredient))
+    }
+
     function displaySection() {
         return (
-            ingredients.length > 0 && <IngredientsList ref={recipeSection} ingredients={ingredients} showRecipe={showRecipe} />
+            ingredients.length > 0 && (
+                <IngredientsList
+                    ref={recipeSection}
+                    ingredients={ingredients}
+                    showRecipe={showRecipe}
+                    removeIngredient={removeIngredient}
+                />
+            )
         )
     }
 

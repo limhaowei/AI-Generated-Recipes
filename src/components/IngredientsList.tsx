@@ -3,12 +3,23 @@ import React from "react";
 interface IngredientsListProps {
     ingredients: string[];
     showRecipe: () => void;
+    removeIngredient: (ingredient: string) => void;
     ref: React.RefObject<HTMLDivElement | null>;
 }
 
 export default function IngredientsList(props: IngredientsListProps) {
     const ingredientsListItems = props.ingredients.map(ingredient => (
-        <li key={ingredient}>{ingredient}</li>
+        <li key={ingredient}>
+            <span>{ingredient}</span>
+            <button
+                type="button"
+                className="remove-ingredient-btn"
+                onClick={() => props.removeIngredient(ingredient)}
+                aria-label={`Remove ${ingredient}`}
+            >
+                ×
+            </button>
+        </li>
     ))
 
     return (
