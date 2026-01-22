@@ -48,7 +48,7 @@ const LOADING_MESSAGES = [
     "Almost ready to serve...",
 ]
 
-const STORAGE_KEY = "chef-claude-ingredients"
+const STORAGE_KEY = "chef-gemini-ingredients"
 
 export default function Main() {
     const [ingredients, setIngredients] = useState<string[]>([])
