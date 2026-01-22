@@ -188,3 +188,46 @@ ul.ingredients-list > li {
     font-size: 0.875rem;
     cursor: pointer;
 }
+
+.similar-warning {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 20px;
+    margin-top: 16px;
+    gap: 12px;
+    background: #FFFBEB;
+    border-radius: 8px;
+    border: 1px solid #FDE68A;
+}
+
+.similar-warning p {
+    color: #92400E;
+    font-size: 0.9rem;
+    text-align: center;
+    margin: 0;
+}
+
+.similar-warning-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.similar-warning-actions button {
+    border: none;
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-family: Inter, sans-serif;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+.similar-warning-actions button:first-child {
+    background: #D17557;
+    color: #FAFAF8;
+}
+
+.similar-warning-actions button:last-child {
+    background: #E5E7EB;
+    color: #374151;
+}

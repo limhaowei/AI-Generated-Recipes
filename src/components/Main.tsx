@@ -1,7 +1,43 @@
 import { useState, useRef, useEffect } from "react"
+import { stringSimilarity } from "string-similarity-js"
 import Recipe from "./Recipe"
 import IngredientsList from "./IngredientsList"
 import { getRecipeFromGemini } from "../ai"
+
+const SIMILARITY_THRESHOLD = 0.8
+const MAX_EDIT_DISTANCE_RATIO = 0.3
+
+interface SimilarIngredient {
+    pending: string
+    existing: string
+}
+
+function levenshteinDistance(a: string, b: string): number {
+    const matrix: number[][] = []
+
+    for (let i = 0; i <= b.length; i++) {
+        matrix[i] = [i]
+    }
+    for (let j = 0; j <= a.length; j++) {
+        matrix[0][j] = j
+    }
+
+    for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+            if (b[i - 1] === a[j - 1]) {
+                matrix[i][j] = matrix[i - 1][j - 1]
+            } else {
+                matrix[i][j] = Math.min(
+                    matrix[i - 1][j - 1] + 1,
+                    matrix[i][j - 1] + 1,
+                    matrix[i - 1][j] + 1
+                )
+            }
+        }
+    }
+
+    return matrix[b.length][a.length]
+}
 
 const LOADING_MESSAGES = [
     "Raiding the pantry for ideas...",
@@ -20,6 +56,7 @@ export default function Main() {
     const [isLoading, setIsLoading] = useState(false)
     const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
     const [error, setError] = useState<string | null>(null)
+    const [similarWarning, setSimilarWarning] = useState<SimilarIngredient | null>(null)
 
     const recipeSection = useRef(null)
 
@@ -47,9 +84,51 @@ export default function Main() {
         return () => clearInterval(interval)
     }, [isLoading])
 
+    function findSimilarIngredient(newIngredient: string): string | null {
+        const normalized = newIngredient.trim().toLowerCase()
+        for (const existing of ingredients) {
+            const existingNormalized = existing.trim().toLowerCase()
+            if (normalized === existingNormalized) {
+                return existing
+            }
+
+            const similarity = stringSimilarity(normalized, existingNormalized)
+            if (similarity >= SIMILARITY_THRESHOLD) {
+                return existing
+            }
+
+            const maxLen = Math.max(normalized.length, existingNormalized.length)
+            const editDistance = levenshteinDistance(normalized, existingNormalized)
+            if (editDistance / maxLen <= MAX_EDIT_DISTANCE_RATIO) {
+                return existing
+            }
+        }
+        return null
+    }
+
     function addIngredient(formData: FormData) {
-        const newIngredient = formData.get("ingredient") as string
-        setIngredients(prevIngredients => [...prevIngredients, newIngredient])
+        const newIngredient = (formData.get("ingredient") as string).trim()
+        if (!newIngredient) return
+
+        const similar = findSimilarIngredient(newIngredient)
+        if (similar) {
+            setSimilarWarning({ pending: newIngredient, existing: similar })
+            return
+        }
+
+        setSimilarWarning(null)
+        setIngredients(prev => [...prev, newIngredient])
+    }
+
+    function confirmAddIngredient() {
+        if (similarWarning) {
+            setIngredients(prev => [...prev, similarWarning.pending])
+            setSimilarWarning(null)
+        }
+    }
+
+    function dismissSimilarWarning() {
+        setSimilarWarning(null)
     }
 
     function displaySection() {
@@ -90,6 +169,18 @@ export default function Main() {
                 />
                 <button>Add Ingredient</button>
             </form>
+
+            {similarWarning && (
+                <div className="similar-warning" aria-live="polite">
+                    <p>
+                        "{similarWarning.pending}" looks similar to "{similarWarning.existing}" already in your list.
+                    </p>
+                    <div className="similar-warning-actions">
+                        <button type="button" onClick={confirmAddIngredient}>Add anyway</button>
+                        <button type="button" onClick={dismissSimilarWarning}>Cancel</button>
+                    </div>
+                </div>
+            )}
 
             {displaySection()}
 
