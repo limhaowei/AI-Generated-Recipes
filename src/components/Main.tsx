@@ -12,13 +12,24 @@ const LOADING_MESSAGES = [
     "Almost ready to serve...",
 ]
 
+const STORAGE_KEY = "chef-claude-ingredients"
+
 export default function Main() {
     const [ingredients, setIngredients] = useState<string[]>([])
     const [recipe, setRecipe] = useState<string>("")
     const [isLoading, setIsLoading] = useState(false)
     const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
+    const [error, setError] = useState<string | null>(null)
 
     const recipeSection = useRef(null)
+
+    useEffect(() => {
+        const saved = localStorage.getItem(STORAGE_KEY)
+        if (saved) {
+            setIngredients(JSON.parse(saved))
+            localStorage.removeItem(STORAGE_KEY)
+        }
+    }, [])
 
     useEffect(() => {
         if (recipe !== "" && recipeSection.current !== null) {
@@ -50,11 +61,22 @@ export default function Main() {
     async function showRecipe() {
         setIsLoading(true)
         setLoadingMessageIndex(0)
-        const recipeMarkdown = await getRecipeFromGemini(ingredients)
-        setIsLoading(false)
-        if (recipeMarkdown) {
-            setRecipe(recipeMarkdown)
+        setError(null)
+        try {
+            const recipeMarkdown = await getRecipeFromGemini(ingredients)
+            if (recipeMarkdown) {
+                setRecipe(recipeMarkdown)
+            }
+        } catch {
+            setError("Failed to generate recipe. Please try again.")
+        } finally {
+            setIsLoading(false)
         }
+    }
+
+    function handleTryAgain() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(ingredients))
+        window.location.reload()
     }
 
     return (
