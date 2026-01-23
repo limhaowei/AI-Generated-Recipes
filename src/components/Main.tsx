@@ -32,7 +32,7 @@ function damerauLevenshteinDistance(a: string, b: string): number {
                 matrix[i][j - 1] + 1,
                 matrix[i - 1][j - 1] + cost
             )
-            // Transposition: swapping two adjacent characters counts as 1 edit
+    
             if (i > 1 && j > 1 && a[j - 1] === b[i - 2] && a[j - 2] === b[i - 1]) {
                 matrix[i][j] = Math.min(matrix[i][j], matrix[i - 2][j - 2] + 1)
             }
@@ -129,6 +129,7 @@ export default function Main() {
             setSimilarWarning(null)
         }
     }
+
 
     function dismissSimilarWarning() {
         setSimilarWarning(null)
